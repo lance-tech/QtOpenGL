@@ -47,18 +47,25 @@ GLWindow::~GLWindow()
 
 void GLWindow::Update(double& deltaTime)
 {
-	float speed = deltaTime * 0.005f;
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, glm::sin(speed) + 2.5f, 0.0f));
-	//modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
-	modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
-	rect1->SetModelMatrix(modelMatrix1);
-	rect1->Draw(VP, deltaTime);
+	{
+		float speed = deltaTime * 0.005f;
 
-	glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, glm::sin(speed) * 2.5f));
-	modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
-	mesh1->SetModelMatrix(modelMatrix2);
-	mesh1->Draw(VP, deltaTime);
+		glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, glm::sin(speed) + 2.5f, 0.0f));
+		//modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
+		rect1->SetModelMatrix(modelMatrix1);
+		rect1->Draw(VP, deltaTime);
+
+		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, glm::sin(speed) * 2.5f));
+		modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+		mesh1->SetModelMatrix(modelMatrix2);
+		mesh1->Draw(VP, deltaTime);
+	}
+
+
+	SwapBuffers(hdc);
 }
 
 void GLWindow::InitGL()
@@ -150,12 +157,8 @@ void GLWindow::InitGL()
 
 void GLWindow::paintEvent(QPaintEvent* paintEvent)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	double time = GetTickCount64();
-
 	Update(time);
-
-	SwapBuffers(hdc);
 }
 
 void GLWindow::resizeEvent(QResizeEvent* resizeEvent)
