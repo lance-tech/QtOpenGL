@@ -90,6 +90,18 @@
     <ClInclude Include="Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shader_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vboindexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="base.frag">
@@ -120,6 +132,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Lambert.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="WobblyTexture.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Passthrough.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="StandardShadingRTT.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="StandardShadingRTT.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

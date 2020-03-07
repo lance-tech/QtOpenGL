@@ -111,8 +111,12 @@
     <ClInclude Include="glRect2D.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="ModelLoader.h" />
+    <ClInclude Include="objloader.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="shader_util.h" />
+    <ClInclude Include="texture.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="vboindexer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="base.frag" />
@@ -125,6 +129,10 @@
     <None Include="DirectionalLight.vert" />
     <None Include="Lambert.frag" />
     <None Include="Lambert.vert" />
+    <None Include="Passthrough.vert" />
+    <None Include="StandardShadingRTT.frag" />
+    <None Include="StandardShadingRTT.vert" />
+    <None Include="WobblyTexture.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
