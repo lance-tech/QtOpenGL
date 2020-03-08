@@ -146,5 +146,8 @@
     <None Include="StandardShadingRTT.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="RampUVMappingSprite.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

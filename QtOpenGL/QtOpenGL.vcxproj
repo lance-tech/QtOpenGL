@@ -130,6 +130,7 @@
     <None Include="Lambert.frag" />
     <None Include="Lambert.vert" />
     <None Include="Passthrough.vert" />
+    <None Include="RampUVMappingSprite.frag" />
     <None Include="StandardShadingRTT.frag" />
     <None Include="StandardShadingRTT.vert" />
     <None Include="WobblyTexture.frag" />

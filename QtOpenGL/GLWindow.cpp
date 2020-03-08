@@ -63,9 +63,15 @@ GLWindow::~GLWindow()
 void GLWindow::Initialize()
 {
 	rect1 = new glRect2D();
-	rect1->SetShader("base.vs", "base.frag");
-	rect1->GetShader().SetTexture("perlin_noise.bmp");
+	rect1->SetShader("base.vs", "RampUVMappingSprite.frag");
+	rect1->GetShader().SetTexture("smoke1.bmp");
+	//rect1->GetShader().SetTexture("smoke-sprite.bmp");
+	//rect1->GetShader().SetTexture("perlin_noise.bmp");
 	rect1->SetRect(-1, 1, 1, -1);
+
+	rampTexture = ImageLoader::BMP("Ramp_Fire.bmp");
+	rampTextureID = glGetUniformLocation(rect1->GetShader().Program, "rampSampler");
+
 
 	mesh1 = new glMesh("teapot.obj");
 	mesh1->SetProjectionMatrix(Projection);
@@ -130,8 +136,8 @@ void GLWindow::Initialize()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ScreenWidth, ScreenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 	// Poor filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -163,7 +169,10 @@ void GLWindow::Initialize()
 	texID = glGetUniformLocation(quad_programID, "renderedTexture");
 	timeID = glGetUniformLocation(quad_programID, "time");
 
-	noiseTexture = ImageLoader::BMP("perlin_noise.bmp");
+	//noiseTexture = ImageLoader::BMP("perlin_noise.bmp");
+	noiseTexture = ImageLoader::BMP("UV_Deform_Test_512.bmp");
+	//noiseTexture = ImageLoader::DDS("uv_deform.dds");
+	
 	noiseTextureID = glGetUniformLocation(quad_programID, "noiseTexture");
 
 }
@@ -269,11 +278,20 @@ void GLWindow::Update(double& deltaTime)
 
 		glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 2.5f, 0.0f));
 		//modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMatrix1 = glm::scale(modelMatrix1, glm::vec3(2.0f, 2.0f, 2.0f));
 		modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
 		rect1->SetModelMatrix(modelMatrix1);
+
+		rect1->GetShader().Use();
+		rect1->GetShader().ActiveTexture();
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, rampTexture);
+		glUniform1i(rampTextureID, 1);
+
 		rect1->Draw(VP, deltaTime);
 
-		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.5f));
+		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.5f, -3.0f, 2.5f));
 		modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
 		mesh1->SetModelMatrix(modelMatrix2);
 		mesh1->Draw(VP, deltaTime);
@@ -365,7 +383,7 @@ void GLWindow::InitGL()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	//glEnable(GL_ALPHA_TEST);
 	//glAlphaFunc(GL_GREATER, 0.0);

@@ -11,8 +11,11 @@ uniform float time;
 void main(){
 //	color = texture( renderedTexture, vec2( sin(time) * 10 + UV.x, UV.y ) ).xyz ;
 
-	vec3 noiseColor = texture( noiseTexture, vec2(UV.x + (time * 0.002), UV.y)).xyz;
+//	vec3 noiseColor = texture( noiseTexture, vec2(UV.x + (time * 0.002), UV.y)).xyz;
+	//color = texture( renderedTexture, vec2(UV.x + (noiseColor.x * 0.08), UV.y)).xyz;
+
+	vec3 noiseColor = texture( noiseTexture, UV).xyz;
 //	color = noiseColor;
-	color = texture( renderedTexture, vec2(UV.x + (noiseColor.x * 0.08), UV.y)).xyz;
+	color = texture( renderedTexture, noiseColor.xy).xyz;
 //	color = vec3(color.x, color.x, color.x);
 }

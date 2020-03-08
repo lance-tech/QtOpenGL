@@ -157,8 +157,8 @@ void glRect2D::SetModelMatrix(glm::mat4 model)
 void glRect2D::Draw(glm::mat4& VP, double& time)
 {
 	// Use our shader
-	shader->Use();
-	shader->ActiveTexture();
+	//shader->Use();
+	//shader->ActiveTexture();
 
 	GLint colorLocation = glGetUniformLocation(shader->Program, "inputColor");
 	glUniform4f(colorLocation, r, g, b, a);
