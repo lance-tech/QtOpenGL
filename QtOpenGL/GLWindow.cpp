@@ -74,9 +74,9 @@ void GLWindow::Update(double& deltaTime)
 		{
 			for (int j = 0; j < 10; j++)
 			{
-				modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(j, 0.0f, i));
-				//modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
-				mesh1->SetModelMatrix(modelMatrix2);
+				glm::mat4 rotMatrix = glm::rotate(glm::mat4(1.0f), float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMatrix2 = glm::translate(modelMatrix2, glm::vec3((j - 5) * 1.5f, 0.0f, (i - 5) * 1.5f));
+				mesh1->SetModelMatrix(rotMatrix * modelMatrix2);
 				mesh1->Draw(VP, deltaTime);
 			}
 		}
