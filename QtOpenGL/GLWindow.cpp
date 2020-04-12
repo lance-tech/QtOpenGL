@@ -13,7 +13,10 @@ const float WINDOW_TOP = 20.f;
 
 
 GLWindow::GLWindow(QWidget* parent)
-	: QWidget(parent), hdc(nullptr)
+	: QWidget(parent), hdc(nullptr),
+	CameraPos(glm::vec3(0.0f, 3.0f, 10.0f)),
+	CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
+	CameraUp(glm::vec3(0.0f, 1.0f, 0.0f))
 {
 	InitGL();
 	
@@ -47,21 +50,36 @@ GLWindow::~GLWindow()
 
 void GLWindow::Update(double& deltaTime)
 {
+	//qDebug() << "Render!";
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	{
 		float speed = deltaTime * 0.005f;
 
-		glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, glm::sin(speed) + 2.5f, 0.0f));
-		//modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
-		rect1->SetModelMatrix(modelMatrix1);
-		rect1->Draw(VP, deltaTime);
+		View = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
+		glm::quat _quaternion(glm::vec3(glm::radians(xRotAngle), glm::radians(yRotAngle), glm::radians(0.0f)));
+		glm::mat4 rotationMatrix = glm::toMat4(_quaternion);
+		VP = Projection * View * rotationMatrix;
 
-		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, glm::sin(speed) * 2.5f));
-		modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
-		mesh1->SetModelMatrix(modelMatrix2);
-		mesh1->Draw(VP, deltaTime);
+		//glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 2.5f, 0.0f));
+		////modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
+		//modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
+		//rect1->SetModelMatrix(modelMatrix1);
+		//rect1->Draw(VP, deltaTime);
+
+
+		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(j, 0.0f, i));
+				//modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+				mesh1->SetModelMatrix(modelMatrix2);
+				mesh1->Draw(VP, deltaTime);
+			}
+		}
 	}
 
 
@@ -143,16 +161,20 @@ void GLWindow::InitGL()
 
 	Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-	View = glm::lookAt(
-		glm::vec3(0, 10, 10), // World Space
-		glm::vec3(0, 0, 0), // looks at the origin
-		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
+	View = glm::lookAt(CameraPos, CameraFront, CameraUp);
+
+	//View = glm::lookAt(
+	//	glm::vec3(0, 10, 10), // World Space
+	//	glm::vec3(0, 0, 0), // looks at the origin
+	//	glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+	//);
 
 	VP = Projection * View;
 
 	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
 	updateTimer.start(0);
+
+	this->setFocus();
 }
 
 void GLWindow::paintEvent(QPaintEvent* paintEvent)
@@ -173,5 +195,104 @@ void GLWindow::resizeEvent(QResizeEvent* resizeEvent)
 
 	if (glViewport != NULL) {
 		glViewport(0, 0, ScreenWidth, ScreenHeight);
+	}
+}
+
+void GLWindow::mousePressEvent(QMouseEvent* event)
+{
+	QPoint pos = event->pos();
+
+	has_rotation_started = true;
+	startX = pos.x();
+	startY = pos.y();
+	
+	qDebug() << has_rotation_started;
+}
+
+void GLWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+	has_rotation_started = false;
+
+	qDebug() << has_rotation_started;
+}
+
+void GLWindow::mouseMoveEvent(QMouseEvent* event)
+{
+	QPoint pos = event->pos();
+
+	if (has_rotation_started)
+	{
+		xRotAngle = xRotAngle + (pos.y() - startY);
+		yRotAngle = yRotAngle + (pos.x() - startX);
+
+		startX = pos.x();
+		startY = pos.y();
+	}
+	/*if (firstMouse)
+	{
+		lastX = pos.x();
+		lastY = pos.y();
+		firstMouse = false;
+	}
+	
+
+	qDebug() << "Last XY : " << lastX << ", " << lastY;
+
+	float xoffset = pos.x() - lastX;
+	float yoffset = lastY - pos.y();
+
+	qDebug() << "Offset XY : " << xoffset << ", " << yoffset;
+
+	lastX = pos.x();
+	lastY = pos.y();
+
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f)
+	{
+		pitch = 89.f;
+	}
+	if (pitch < -89.0f)
+	{
+		pitch = -89.f;
+	}
+
+	glm::vec3 front;
+
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+	CameraFront = glm::normalize(front);*/
+
+	//qDebug() << CameraFront.x << ", " << CameraFront.y << ", " << CameraFront.z;
+}
+
+void GLWindow::PressedKey(int key)
+{
+	if (key == Qt::Key_W)
+	{
+		CameraPos += CameraFront;
+		qDebug() << CameraPos.x << ", " << CameraPos.y << ", " << CameraPos.z;
+	}
+
+	if (key == Qt::Key_S)
+	{
+		CameraPos -= CameraFront;
+	}
+
+	if (key == Qt::Key_A)
+	{
+		CameraPos -= glm::normalize(glm::cross(CameraFront, CameraUp));
+	}
+
+	if (key == Qt::Key_D)
+	{
+		CameraPos += glm::normalize(glm::cross(CameraFront, CameraUp));
 	}
 }

@@ -9,4 +9,11 @@ QtOpenGLMain::QtOpenGLMain(QWidget *parent)
 	mainLayout.setMargin(0);
 	mainLayout.addWidget(&glWindow);
 	ui.widget->setLayout(&mainLayout);
+
+	connect(this, SIGNAL(KeyPressed(int)), &glWindow, SLOT(PressedKey(int)));
+}
+
+void QtOpenGLMain::keyPressEvent(QKeyEvent* event)
+{
+	emit KeyPressed(event->key());
 }

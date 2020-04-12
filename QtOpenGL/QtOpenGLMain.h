@@ -3,6 +3,7 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_QtOpenGLMain.h"
 
+#include <QKeyEvent>
 #include "GLWindow.h"
 
 
@@ -18,4 +19,10 @@ private:
 
 	QVBoxLayout mainLayout;
 	GLWindow glWindow;
+
+protected:
+	virtual void keyPressEvent(QKeyEvent* event) override;
+
+signals:
+	void KeyPressed(int key);
 };

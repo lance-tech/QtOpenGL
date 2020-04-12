@@ -28,6 +28,8 @@ void main(){
 
 	eyeVector = ViewPos - WorldModelPos;
 
-	gl_Position = P * V * vec4(FragPos, 1);
+//	gl_Position = P * V * vec4(FragPos, 1);
+	gl_Position = MVP * vec4(FragPos, 1);
+
 }
 
