@@ -17,5 +17,6 @@ void main(){
 	vec3 noiseColor = texture( noiseTexture, UV).xyz;
 //	color = noiseColor;
 	color = texture( renderedTexture, noiseColor.xy).xyz;
+//	color = texture( renderedTexture, UV).xyz;
 //	color = vec3(color.x, color.x, color.x);
 }

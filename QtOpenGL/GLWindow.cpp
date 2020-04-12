@@ -19,10 +19,12 @@ static const GLfloat g_quad_vertex_buffer_data[] = {
 };
 
 GLWindow::GLWindow(QWidget* parent)
-	: QWidget(parent), hdc(nullptr)
+	: QWidget(parent), hdc(nullptr), times(0.0), frame(0), lastTime(GetTickCount64())
 {
+	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
+	updateTimer.start(0);
+
 	InitGL();
-	
 	Initialize();
 }
 
@@ -170,7 +172,7 @@ void GLWindow::Initialize()
 	timeID = glGetUniformLocation(quad_programID, "time");
 
 	//noiseTexture = ImageLoader::BMP("perlin_noise.bmp");
-	noiseTexture = ImageLoader::BMP("UV_Deform_Test_512.bmp");
+	noiseTexture = ImageLoader::BMP("render.bmp");
 	//noiseTexture = ImageLoader::DDS("uv_deform.dds");
 	
 	noiseTextureID = glGetUniformLocation(quad_programID, "noiseTexture");
@@ -292,9 +294,17 @@ void GLWindow::Update(double& deltaTime)
 		rect1->Draw(VP, deltaTime);
 
 		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(5.5f, -3.0f, 2.5f));
-		modelMatrix2 = glm::rotate(modelMatrix2, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
-		mesh1->SetModelMatrix(modelMatrix2);
-		mesh1->Draw(VP, deltaTime);
+
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3((i * 3) - 13, -5.0f, (j * -3) + 4));
+				modelMatrix2 = glm::rotate(modelMatrix2, float(((i * 10) + (j * 20)) + speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+				mesh1->SetModelMatrix(modelMatrix2);
+				mesh1->Draw(VP, deltaTime);
+			}
+		}
 	}
 
 	
@@ -316,6 +326,9 @@ void GLWindow::Update(double& deltaTime)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, noiseTexture);
 		glUniform1i(noiseTextureID, 1);
+
+		GLuint renderTextureMatrixID = glGetUniformLocation(quad_programID, "MVP");
+		glUniformMatrix4fv(renderTextureMatrixID, 1, GL_FALSE, &VP[0][0]);
 
 		glUniform1f(timeID, speed);
 
@@ -414,13 +427,34 @@ void GLWindow::InitGL()
 
 	VP = Projection * View;
 
-	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(update()));
-	updateTimer.start(0);
+	
 }
 
 void GLWindow::paintEvent(QPaintEvent* paintEvent)
 {
 	double time = GetTickCount64();
+
+	elapsedTime = time - lastTime;
+	frame++;
+
+	if (elapsedTime > 1000.0 / 30.0)
+	{
+		qDebug() << frame;
+
+		frame = 0;
+		lastTime = time;
+	}
+
+	//if (elapsedTime >= 1.0)
+	//{
+	//	emit UpdateFPS(1000.0 / double(frame));
+
+	//	frame = 0;
+	//	lastTime = time;
+	//}
+	
+	
+
 	Update(time);
 }
 

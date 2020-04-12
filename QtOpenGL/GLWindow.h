@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -25,6 +26,9 @@ class GLWindow : public QWidget
 {
 	Q_OBJECT
 
+signals:
+	void UpdateFPS(double);
+
 public:
 	explicit GLWindow(QWidget* parent = Q_NULLPTR);
 	virtual ~GLWindow() override;
@@ -42,6 +46,12 @@ private:
 	HDC hdc;
 	HGLRC hrc;
 	QTimer updateTimer;
+
+	double times;
+	double elapsedTime;
+	double lastTime;
+	int frame;
+
 
 	int ScreenWidth = 1024;
 	int ScreenHeight = 768;

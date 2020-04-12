@@ -4,7 +4,7 @@
 #include "ui_QtOpenGLMain.h"
 
 #include "GLWindow.h"
-
+#include <string>
 
 class QtOpenGLMain : public QMainWindow
 {
@@ -18,4 +18,7 @@ private:
 
 	QVBoxLayout mainLayout;
 	GLWindow glWindow;
+
+private slots:
+	void UpdateFPS(double);
 };
