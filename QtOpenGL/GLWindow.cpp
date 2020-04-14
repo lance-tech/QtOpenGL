@@ -2,6 +2,7 @@
 //#include <iostream>
 #include <qdebug.h>
 
+#include "Transform.h"
 
 
 const int WINDOW_WIDTH = 1024;
@@ -20,10 +21,10 @@ GLWindow::GLWindow(QWidget* parent)
 {
 	InitGL();
 	
-	rect1 = new glRect2D();
-	rect1->SetShader("base.vs", "base.frag");
-	rect1->GetShader().SetTexture("perlin_noise.bmp");
-	rect1->SetRect(-1, 1, 1, -1);
+	//rect1 = new glRect2D();
+	//rect1->SetShader("base.vs", "base.frag");
+	//rect1->GetShader().SetTexture("perlin_noise.bmp");
+	//rect1->SetRect(-1, 1, 1, -1);
 
 	mesh1 = new glMesh("teapot.obj");
 	mesh1->SetProjectionMatrix(Projection);
@@ -31,7 +32,9 @@ GLWindow::GLWindow(QWidget* parent)
 	mesh1->SetModelMatrix(glm::mat4(1.0f));
 	//mesh1->SetShader("Lambert.vert", "Lambert.frag");
 	mesh1->SetShader("DirectionalLight.vert", "DirectionalLight.frag");
-	mesh1->GetShader().SetTexture("perlin_noise.bmp");
+	//mesh1->GetShader().SetTexture("perlin_noise.bmp");
+	mesh1->GetShader().SetTexture("uv_checker large.bmp");
+	//mesh1->GetShader().SetTexture("gray.bmp");
 }
 
 GLWindow::~GLWindow()
@@ -44,7 +47,7 @@ GLWindow::~GLWindow()
 		ReleaseDC((HWND)winId(), hdc);
 	}
 
-	delete rect1;
+	//delete rect1;
 	delete mesh1;
 }
 
@@ -55,12 +58,12 @@ void GLWindow::Update(double& deltaTime)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	{
-		float speed = deltaTime * 0.005f;
+		float speed = deltaTime * 0.05f;
 
 		View = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
 		glm::quat _quaternion(glm::vec3(glm::radians(xRotAngle), glm::radians(yRotAngle), glm::radians(0.0f)));
 		glm::mat4 rotationMatrix = glm::toMat4(_quaternion);
-		VP = Projection * View * rotationMatrix;
+		View = View * rotationMatrix;
 
 		//glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 2.5f, 0.0f));
 		////modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -68,16 +71,23 @@ void GLWindow::Update(double& deltaTime)
 		//rect1->SetModelMatrix(modelMatrix1);
 		//rect1->Draw(VP, deltaTime);
 
-
-		glm::mat4 modelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		glm::mat4 modelMatrix;
 		for (int i = 0; i < 10; i++)
 		{
 			for (int j = 0; j < 10; j++)
 			{
-				glm::mat4 rotMatrix = glm::rotate(glm::mat4(1.0f), float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
-				modelMatrix2 = glm::translate(modelMatrix2, glm::vec3((j - 5) * 1.5f, 0.0f, (i - 5) * 1.5f));
-				mesh1->SetModelMatrix(rotMatrix * modelMatrix2);
-				mesh1->Draw(VP, deltaTime);
+				modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3((j - 5) * 3.f, 0.0f, (i - 5) * 3.f));
+				modelMatrix = glm::rotate(modelMatrix, float(((i * 180) + (j * 30)) * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+				//modelMatrix = glm::rotate(modelMatrix, float(speed * (3.14 / 180.0)), glm::vec3(0.0f, 1.0f, 0.0f));
+				mesh1->SetModelMatrix(modelMatrix);
+				mesh1->SetProjectionMatrix(Projection);
+				mesh1->SetViewMatrix(View);
+
+				//glm::vec3 vp = Core::Transform::GetPositionByMatrix(View);
+				mesh1->SetViewPosition(CameraPos);
+
+				mesh1->SetLightPosition(glm::vec3(200, 100, 200));
+				mesh1->Draw(deltaTime);
 			}
 		}
 	}

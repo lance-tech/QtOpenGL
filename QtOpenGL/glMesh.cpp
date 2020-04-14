@@ -93,13 +93,12 @@ void glMesh::SetModelMatrix(glm::mat4 model)
 }
 
 
-void glMesh::Draw(glm::mat4& VP, double& time)
+void glMesh::Draw(double& time)
 {
 	shader->Use();
 	shader->ActiveTexture();
 
 	LightID = glGetUniformLocation(shader->Program, "LightPosition_worldspace");
-	MatrixID = glGetUniformLocation(shader->Program, "MVP");
 	ViewMatrixID = glGetUniformLocation(shader->Program, "V");
 	ModelMatrixID = glGetUniformLocation(shader->Program, "M");
 	ProjectionMatrixID = glGetUniformLocation(shader->Program, "P");
@@ -120,19 +119,23 @@ void glMesh::Draw(glm::mat4& VP, double& time)
 	//	glm::vec3(0, 1, 0)
 	//);
 
-	glm::mat4 MVP = VP * Model;
+	//glm::mat4 MVP = Projection * View * Model;
 
 	// Send our transformation to the currently bound shader, 
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+	//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
 
-	glm::vec3 lightPos = glm::vec3(100, 100, 100);
-	glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+	glUniform3f(LightID, 
+		glm::sin(time * 0.001f) * LightPosition.x, 
+		(glm::sin(time * 0.001f) / 2.0f + 1.0f) * LightPosition.y + 50.f,
+		glm::cos(time * 0.001f) * LightPosition.z);
 
 	GLint viewPosID = glGetUniformLocation(shader->Program, "ViewPos");
-	glUniform3f(viewPosID, 0.0f, 0.0f, 50.0f);
+	glUniform3f(viewPosID, ViewPosition.x, ViewPosition.y, ViewPosition.z);
+	/*glm::vec3 vp = Core::Transform::GetPositionByMatrix(View);
+	glUniform3f(viewPosID, vp.x, vp.y, vp.z);*/
 
 	GLint worldModelPosID = glGetUniformLocation(shader->Program, "WorldModelPos");
 	glm::vec3 wp = Core::Transform::GetPositionByMatrix(Model);

@@ -12,7 +12,6 @@ out vec2 UV;
 out vec3 eyeVector;
 
 // Values that stay constant for the whole mesh.
-uniform mat4 MVP;
 uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
@@ -23,13 +22,15 @@ uniform vec3 WorldModelPos;
 void main(){
 
 	FragPos = vec3(M * vec4(vertexPosition_modelspace, 1.0));
-	Normal = mat3(transpose(inverse(M))) * vertexNormal_modelsapce;  
+	Normal = normalize(mat3(transpose(inverse(M))) * vertexNormal_modelsapce);  
 	UV = vertexUV;
 
-	eyeVector = ViewPos - WorldModelPos;
+//	eyeVector = ViewPos - WorldModelPos;
+	eyeVector = ViewPos - FragPos;
 
-//	gl_Position = P * V * vec4(FragPos, 1);
-	gl_Position = MVP * vec4(FragPos, 1);
+	gl_Position = P * V * M * vec4(vertexPosition_modelspace, 1);
+//	gl_Position = P * V * M * vec4(FragPos, 1);
+//	gl_Position = MVP * vec4(FragPos, 1);
 
 }
 

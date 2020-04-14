@@ -12,24 +12,43 @@ out vec4 color;
 // Values that stay constant for the whole mesh.
 uniform vec4 inputColor;
 uniform sampler2D TextureSampler0;
-// uniform vec3 LightPosition_worldspace;
-// uniform vec3 ViewPos;
+uniform vec3 LightPosition_worldspace;
+//uniform vec3 ViewPos;
 uniform float specularFactor;
 uniform float Time;
 
 void main()
 {
 	vec3 textureColor = texture(TextureSampler0, UV).rgb;
-	vec3 ambient = vec3(0.1, 0.1, 0.1) * inputColor.rgb;
-    vec3 norm = normalize(Normal);
-    vec3 lightPos = vec3(-1, 1, 1);
-    vec3 lightDir = normalize(lightPos);  
+	vec3 ambient = vec3(0.25, 0.25, 0.5) * inputColor.rgb * (textureColor * 0.5);
+
+    vec3 normal = normalize(Normal);
+
+    vec3 lightDir = normalize(LightPosition_worldspace);  
+
     vec3 viewDir = normalize(eyeVector);
-    vec3 reflectDir = -reflect(viewDir, norm);  
-	float shininess = pow(35.0, specularFactor * 2);
-    float spec = pow(max(dot(reflectDir, lightDir), 0.0), shininess);
-    float lambert = max(dot(lightDir, norm), 0.0);
-    vec3 fresnel = pow(1 - max(dot(viewDir, norm), 0.0), 4.0) * (1-lambert) * (inputColor.rgb * 0.5);
-    vec3 result = (lambert * inputColor.rgb * textureColor) + fresnel + (spec * specularFactor) + ambient;
+//    vec3 reflectDir = -reflect(viewDir, normal);  
+//	float shininess = pow(35.0, specularFactor * 2);
+//    float spec = pow(max(dot(reflectDir, lightDir), 0.0), shininess);
+
+
+    vec3 halfNormal = normalize(lightDir + viewDir);
+    float NdotH = max(0.0, dot(normal, lightDir));
+    float spec = pow(NdotH, 48.0);
+
+    float NdotL = max(0.0, dot(normal, lightDir));
+
+
+//    vec3 eyeVector2 = normalize(ViewPos - FragPos);
+
+    float fresnel = 1 - max(dot(viewDir, normal), 0.0);
+
+//    vec3 fresnel = pow(1 - max(dot(viewDir, normal), 0.0), 4.0) * (1-NdotL) * (inputColor.rgb * 0.5);
+    
+//    vec3 result = (NdotL * inputColor.rgb * textureColor) + fresnel + (spec * specularFactor) + ambient;
+    
+    vec3 result = (textureColor * NdotL) + spec + ambient;
+
     color = vec4(result, 1.0);
+//    color = vec4(fresnel, fresnel, fresnel, 1.0);
 }

@@ -23,7 +23,7 @@ public:
 	virtual ~glMesh();
 
 	void InitializeMesh(std::string path);
-	void Draw(glm::mat4 &VP, double& time);
+	void Draw(double& time);
 
 	Shader* shader;
 	void SetShader(const char* vsShader, const char* fsShader);
@@ -34,6 +34,9 @@ public:
 	void SetProjectionMatrix(glm::mat4 projection);
 	void SetViewMatrix(glm::mat4 View);
 	void SetModelMatrix(glm::mat4 model);
+
+	inline void SetViewPosition(glm::vec3 pos) { ViewPosition = pos; }
+	inline void SetLightPosition(glm::vec3 pos) { LightPosition = pos; }
 
 private:
 	std::string Path;
@@ -48,6 +51,9 @@ private:
 	glm::mat4 View;
 	glm::mat4 Model;
 	glm::mat4 MVP;
+
+	glm::vec3 ViewPosition;
+	glm::vec3 LightPosition;
 
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
