@@ -34,6 +34,7 @@ public:
 	void SetProjectionMatrix(glm::mat4 projection);
 	void SetViewMatrix(glm::mat4 View);
 	void SetModelMatrix(glm::mat4 model);
+	void SetViewRotMatrix(glm::mat4 mat);
 
 	inline void SetViewPosition(glm::vec3 pos) { ViewPosition = pos; }
 	inline void SetLightPosition(glm::vec3 pos) { LightPosition = pos; }
@@ -45,12 +46,13 @@ private:
 	GLuint ViewMatrixID;
 	GLuint ModelMatrixID;
 	GLuint ProjectionMatrixID;
+	GLuint ViewRotateID;
 	GLuint LightID;
 
 	glm::mat4 Projection;
 	glm::mat4 View;
 	glm::mat4 Model;
-	glm::mat4 MVP;
+	glm::mat4 ViewRotate;
 
 	glm::vec3 ViewPosition;
 	glm::vec3 LightPosition;

@@ -45,6 +45,8 @@ private:
 	HGLRC hrc;
 	QTimer updateTimer;
 
+	float Zoom;
+	glm::vec3 CameraCenter;
 	glm::vec3 CameraPos;
 	glm::vec3 CameraFront;
 	glm::vec3 CameraUp;
@@ -59,8 +61,8 @@ private:
 	bool has_rotation_started = false;
 	int startX = 0;
 	int startY = 0;
-	float xRotAngle;
-	float yRotAngle;
+	float xRotAngle = 0.0f;
+	float yRotAngle = 0.0f;
 	float zoom;
 
 
@@ -71,6 +73,8 @@ private:
 
 	glRect2D* rect1;
 	glMesh* mesh1;
+
+	glMesh* TempAxis;
 	
 protected:
 	virtual void paintEvent(QPaintEvent* paintEvent) override;

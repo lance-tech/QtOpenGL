@@ -122,5 +122,11 @@
     <None Include="Lambert.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="VertexColor.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="VertexColor.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

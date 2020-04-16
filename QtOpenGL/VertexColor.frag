@@ -38,13 +38,17 @@ void main()
 
     float NdotL = max(0.0, dot(normal, lightDir));
 
-    float fresnel = pow(1 - max(dot(viewDir, normal), 0), 10.0);
 
+//    vec3 eyeVector2 = normalize(ViewPos - FragPos);
+
+    float fresnel = 1 - max(dot(viewDir, normal), 0);
+
+//    vec3 fresnel = pow(1 - max(dot(viewDir, normal), 0.0), 4.0) * (1-NdotL) * (inputColor.rgb * 0.5);
     
 //    vec3 result = (NdotL * inputColor.rgb * textureColor) + fresnel + (spec * specularFactor) + ambient;
     
-    vec3 result = (textureColor * NdotL) + spec + ambient + fresnel;
+    vec3 result = (textureColor * NdotL) + spec + ambient;
 
-    color = vec4(result, 1.0);
-//    color = vec4(fresnel, fresnel, fresnel, 1.0);
+//    color = vec4(result, 1.0);
+    color = vec4(fresnel, fresnel, fresnel, 1.0);
 }

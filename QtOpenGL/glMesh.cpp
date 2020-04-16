@@ -92,6 +92,10 @@ void glMesh::SetModelMatrix(glm::mat4 model)
 	Model = model;
 }
 
+void glMesh::SetViewRotMatrix(glm::mat4 mat)
+{
+	ViewRotate = mat;
+}
 
 void glMesh::Draw(double& time)
 {
@@ -102,6 +106,7 @@ void glMesh::Draw(double& time)
 	ViewMatrixID = glGetUniformLocation(shader->Program, "V");
 	ModelMatrixID = glGetUniformLocation(shader->Program, "M");
 	ProjectionMatrixID = glGetUniformLocation(shader->Program, "P");
+	ViewRotateID = glGetUniformLocation(shader->Program, "ViewRot");
 
 	GLint timeLocation = glGetUniformLocation(shader->Program, "Time");
 	glUniform1f(timeLocation, (GLfloat)time);
@@ -126,6 +131,7 @@ void glMesh::Draw(double& time)
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
+	glUniformMatrix4fv(ViewRotateID, 1, GL_FALSE, &ViewRotate[0][0]);
 
 	glUniform3f(LightID, 
 		glm::sin(time * 0.001f) * LightPosition.x, 

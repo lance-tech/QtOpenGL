@@ -15,7 +15,9 @@ const float WINDOW_TOP = 20.f;
 
 GLWindow::GLWindow(QWidget* parent)
 	: QWidget(parent), hdc(nullptr),
-	CameraPos(glm::vec3(0.0f, 3.0f, 10.0f)),
+	Zoom(10.0f),
+	CameraPos(glm::vec3(0.0f, 0.0f, 0.0f)),
+	CameraCenter(glm::vec3(0.0f, 0.0f, 0.0f)),
 	CameraFront(glm::vec3(0.0f, 0.0f, -1.0f)),
 	CameraUp(glm::vec3(0.0f, 1.0f, 0.0f))
 {
@@ -35,6 +37,14 @@ GLWindow::GLWindow(QWidget* parent)
 	//mesh1->GetShader().SetTexture("perlin_noise.bmp");
 	mesh1->GetShader().SetTexture("uv_checker large.bmp");
 	//mesh1->GetShader().SetTexture("gray.bmp");
+
+
+	TempAxis = new glMesh("Axis.obj");
+	TempAxis->SetProjectionMatrix(Projection);
+	TempAxis->SetViewMatrix(View);
+	TempAxis->SetModelMatrix(glm::mat4(1.0f));
+	TempAxis->SetShader("VertexColor.vert", "VertexColor.frag");
+	TempAxis->GetShader().SetTexture("gray.bmp");
 }
 
 GLWindow::~GLWindow()
@@ -49,6 +59,7 @@ GLWindow::~GLWindow()
 
 	//delete rect1;
 	delete mesh1;
+	delete TempAxis;
 }
 
 void GLWindow::Update(double& deltaTime)
@@ -60,16 +71,35 @@ void GLWindow::Update(double& deltaTime)
 	{
 		float speed = deltaTime * 0.05f;
 
-		View = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
 		glm::quat _quaternion(glm::vec3(glm::radians(xRotAngle), glm::radians(yRotAngle), glm::radians(0.0f)));
 		glm::mat4 rotationMatrix = glm::toMat4(_quaternion);
-		View = View * rotationMatrix;
 
-		//glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 2.5f, 0.0f));
-		////modelMatrix1 = glm::rotate(modelMatrix1, float(45 * (3.14 / 180.0)), glm::vec3(0.0f, 0.0f, 1.0f));
-		//modelMatrix1 = glm::rotate(modelMatrix1, glm::radians(speed), glm::vec3(0.0f, 0.0f, 1.0f));
-		//rect1->SetModelMatrix(modelMatrix1);
-		//rect1->Draw(VP, deltaTime);
+		glm::mat4 AxisModelMatrix(1.0f);
+		AxisModelMatrix = glm::translate(AxisModelMatrix, CameraCenter);
+		AxisModelMatrix *= rotationMatrix;
+		CameraCenter = Core::Transform::GetPositionByMatrix(AxisModelMatrix);
+
+		glm::mat4 CameraMatrix(1.0f);
+		CameraMatrix = glm::translate(AxisModelMatrix, glm::vec3(0.f, 0.0f, Zoom));		// Z component use to Zoom
+
+		glm::mat4 CameraFrontMatrix(1.0f);
+		CameraFrontMatrix = glm::translate(AxisModelMatrix, glm::vec3(0.f, 0.0f, -1.f));
+
+		glm::vec3 cameraPosition = Core::Transform::GetPositionByMatrix(CameraMatrix);
+		glm::vec3 cameraFront = Core::Transform::GetPositionByMatrix(CameraFrontMatrix);
+		//qDebug() << CameraPos.x << ", " << CameraPos.y << ", " << CameraPos.z;
+
+		View = glm::lookAt(cameraPosition, cameraPosition + cameraFront, glm::vec3(0.f, 1.0f, 0.f));
+
+		//qDebug() << CamPosition.x << ", " << CamPosition.y << ", " << CamPosition.z;
+
+
+		TempAxis->SetModelMatrix(AxisModelMatrix);
+		TempAxis->SetProjectionMatrix(Projection);
+		TempAxis->SetViewMatrix(View);
+		TempAxis->SetViewPosition(cameraPosition);
+		TempAxis->SetLightPosition(glm::vec3(200, 100, 200));
+		TempAxis->Draw(deltaTime);
 
 		glm::mat4 modelMatrix;
 		for (int i = 0; i < 10; i++)
@@ -82,9 +112,7 @@ void GLWindow::Update(double& deltaTime)
 				mesh1->SetModelMatrix(modelMatrix);
 				mesh1->SetProjectionMatrix(Projection);
 				mesh1->SetViewMatrix(View);
-
-				//glm::vec3 vp = Core::Transform::GetPositionByMatrix(View);
-				mesh1->SetViewPosition(CameraPos);
+				mesh1->SetViewPosition(cameraPosition);
 
 				mesh1->SetLightPosition(glm::vec3(200, 100, 200));
 				mesh1->Draw(deltaTime);
@@ -232,11 +260,19 @@ void GLWindow::mouseMoveEvent(QMouseEvent* event)
 
 	if (has_rotation_started)
 	{
-		xRotAngle = xRotAngle + (pos.y() - startY);
-		yRotAngle = yRotAngle + (pos.x() - startX);
+		int _x = pos.x() - startX;
+		int _y = pos.y() - startY;
+
+		xRotAngle = xRotAngle + _y;
+		yRotAngle = yRotAngle + _x;
+
+		//qDebug() << "RotAngle 1 : " << _x << ", " << _y;
 
 		startX = pos.x();
 		startY = pos.y();
+
+		//qDebug() << "RotAngle 2 : " << pos.x() << ", " << pos.y();
+		//qDebug() << "startXY    : " << startX << ", " << startY;
 	}
 	/*if (firstMouse)
 	{
@@ -287,22 +323,37 @@ void GLWindow::PressedKey(int key)
 {
 	if (key == Qt::Key_W)
 	{
-		CameraPos += CameraFront;
+		CameraCenter += glm::vec3(0.f, 0.1f, 0.f);
+		//CameraPos += CameraFront;
 		qDebug() << CameraPos.x << ", " << CameraPos.y << ", " << CameraPos.z;
 	}
 
 	if (key == Qt::Key_S)
 	{
-		CameraPos -= CameraFront;
+		CameraCenter += glm::vec3(0.f, -0.1f, 0.f);
+		//CameraPos -= CameraFront;
 	}
 
 	if (key == Qt::Key_A)
 	{
-		CameraPos -= glm::normalize(glm::cross(CameraFront, CameraUp));
+		CameraCenter += glm::vec3(-0.1f, 0.f, 0.f);
+		//CameraPos -= glm::normalize(glm::cross(CameraFront, CameraUp));
 	}
 
 	if (key == Qt::Key_D)
 	{
-		CameraPos += glm::normalize(glm::cross(CameraFront, CameraUp));
+		CameraCenter += glm::vec3(0.1f, 0.f, 0.f);
+		//CameraPos += glm::normalize(glm::cross(CameraFront, CameraUp));
 	}
+
+	if (key == Qt::Key_E)
+	{
+		Zoom -= 0.1f;
+	}
+
+	if (key == Qt::Key_C)
+	{
+		Zoom += 0.1f;
+	}
+
 }

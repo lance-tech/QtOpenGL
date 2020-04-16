@@ -16,6 +16,7 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
+uniform mat4 ViewRot;
 
 uniform vec3 LightPosition_worldspace;
 uniform vec3 ViewPos;
@@ -27,8 +28,8 @@ void main(){
 	Normal = normalize(mat3(transpose(inverse(M))) * vertexNormal_modelsapce);  
 	UV = vertexUV;
 
-//	eyeVector = ViewPos - WorldModelPos;
-	eyeVector = ViewPos - FragPos;
+	eyeVector = ViewPos - WorldModelPos;
+//	eyeVector = ViewPos - FragPos;
 //	eyeVector = vec3(ViewRot * vec4(ViewPos - FragPos, 1.0));
 //	eyeVector = ViewPos;
 
