@@ -19,6 +19,9 @@ glMesh::~glMesh()
 	glDeleteBuffers(2, &normalbuffer);
 	glDeleteBuffers(1, &indexbuffer);
 
+	glDeleteBuffers(1, &tangentBuffer);
+	glDeleteBuffers(1, &bitangentBuffer);
+
 	delete shader;
 }
 
@@ -38,10 +41,24 @@ void glMesh::InitializeMesh(std::string path)
 
 	bool res = ModelLoader::Obj(Path.c_str(), vertices, uvs, normals);
 
+	ModelLoader::computeTangentBasis(
+		vertices, uvs, normals, // input
+		tangents, bitangents    // output
+	);
+
 	std::vector<glm::vec3> indexed_vertices;
 	std::vector<glm::vec2> indexed_uvs;
 	std::vector<glm::vec3> indexed_normals;
-	ModelLoader::indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+
+	std::vector<glm::vec3> indexed_tangents;
+	std::vector<glm::vec3> indexed_bitangents;
+
+	//ModelLoader::indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+
+	ModelLoader::indexVBO_TBN(
+		vertices, uvs, normals, tangents, bitangents,
+		indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_tangents, indexed_bitangents
+	);
 
 	// Load it into a VBO
 	glGenBuffers(1, &vertexbuffer);
@@ -63,6 +80,20 @@ void glMesh::InitializeMesh(std::string path)
 	glBufferData(GL_ARRAY_BUFFER, indexed_normals.size() * sizeof(glm::vec3), &indexed_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(2);
+
+
+	glGenBuffers(1, &tangentBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, tangentBuffer);
+	glBufferData(GL_ARRAY_BUFFER, indexed_tangents.size() * sizeof(glm::vec3), &indexed_tangents[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(3);
+
+
+	glGenBuffers(1, &bitangentBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentBuffer);
+	glBufferData(GL_ARRAY_BUFFER, indexed_bitangents.size() * sizeof(glm::vec3), &indexed_bitangents[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(4);
 
 
 	// Generate a buffer for the indices as well
@@ -106,7 +137,12 @@ void glMesh::Draw(double& time)
 	ViewMatrixID = glGetUniformLocation(shader->Program, "V");
 	ModelMatrixID = glGetUniformLocation(shader->Program, "M");
 	ProjectionMatrixID = glGetUniformLocation(shader->Program, "P");
-	ViewRotateID = glGetUniformLocation(shader->Program, "ViewRot");
+	
+	glm::mat4 ModelViewMatrix = View * Model;
+	glm::mat3 ModelView3x3Matrix = glm::mat3(ModelViewMatrix);
+
+	ModelView3x3MatrixID = glGetUniformLocation(shader->Program, "MV3x3");
+	glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, &ModelView3x3Matrix[0][0]);
 
 	GLint timeLocation = glGetUniformLocation(shader->Program, "Time");
 	glUniform1f(timeLocation, (GLfloat)time);
@@ -131,17 +167,16 @@ void glMesh::Draw(double& time)
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
 	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 	glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
-	glUniformMatrix4fv(ViewRotateID, 1, GL_FALSE, &ViewRotate[0][0]);
 
 	glUniform3f(LightID, 
 		glm::sin(time * 0.001f) * LightPosition.x, 
-		(glm::sin(time * 0.001f) / 2.0f + 1.0f) * LightPosition.y + 50.f,
+		(glm::sin(time * 0.001f) / 2.0f + 1.0f) * LightPosition.y,
 		glm::cos(time * 0.001f) * LightPosition.z);
+
+	//glUniform3f(LightID, LightPosition.x, LightPosition.y, LightPosition.z);
 
 	GLint viewPosID = glGetUniformLocation(shader->Program, "ViewPos");
 	glUniform3f(viewPosID, ViewPosition.x, ViewPosition.y, ViewPosition.z);
-	/*glm::vec3 vp = Core::Transform::GetPositionByMatrix(View);
-	glUniform3f(viewPosID, vp.x, vp.y, vp.z);*/
 
 	GLint worldModelPosID = glGetUniformLocation(shader->Program, "WorldModelPos");
 	glm::vec3 wp = Core::Transform::GetPositionByMatrix(Model);
@@ -149,7 +184,7 @@ void glMesh::Draw(double& time)
 	
 
 	GLint specularFactorLocation = glGetUniformLocation(shader->Program, "specularFactor");
-	glUniform1f(specularFactorLocation, 1.0f);
+	glUniform1f(specularFactorLocation, 2.0f);
 
 
 	GLint colorLocation = glGetUniformLocation(shader->Program, "inputColor");

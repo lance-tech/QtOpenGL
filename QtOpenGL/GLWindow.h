@@ -74,6 +74,10 @@ private:
 	glRect2D* rect1;
 	glMesh* mesh1;
 
+	GLuint normalTextureID;
+	GLuint normalTextureSamplerID;
+
+
 	glMesh* TempAxis;
 	
 protected:

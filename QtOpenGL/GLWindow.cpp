@@ -35,8 +35,11 @@ GLWindow::GLWindow(QWidget* parent)
 	//mesh1->SetShader("Lambert.vert", "Lambert.frag");
 	mesh1->SetShader("DirectionalLight.vert", "DirectionalLight.frag");
 	//mesh1->GetShader().SetTexture("perlin_noise.bmp");
-	mesh1->GetShader().SetTexture("uv_checker large.bmp");
+	mesh1->GetShader().SetTexture("Brick_Color.bmp");
 	//mesh1->GetShader().SetTexture("gray.bmp");
+
+	normalTextureID = ImageLoader::BMP("Brick_Normal.bmp");
+	normalTextureSamplerID = glGetUniformLocation(mesh1->GetShader().Program, "NormalTexture");
 
 
 	TempAxis = new glMesh("Axis.obj");
@@ -114,8 +117,15 @@ void GLWindow::Update(double& deltaTime)
 				mesh1->SetViewMatrix(View);
 				mesh1->SetViewPosition(cameraPosition);
 
-				mesh1->SetLightPosition(glm::vec3(200, 100, 200));
+				mesh1->SetLightPosition(glm::vec3(200, 200, 200));
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, normalTextureID);
+				glUniform1i(normalTextureSamplerID, 1);
+
 				mesh1->Draw(deltaTime);
+
+				glBindTexture(GL_TEXTURE_2D, 1);
 			}
 		}
 	}

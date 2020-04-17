@@ -6,45 +6,57 @@ in vec3 Normal;
 in vec2 UV;
 in vec3 eyeVector;
 
+in vec3 LightDirection_tangentspace;
+in vec3 EyeDirection_tangentspace;
+
 // Ouput data
 out vec4 color;
 
 // Values that stay constant for the whole mesh.
 uniform vec4 inputColor;
 uniform sampler2D TextureSampler0;
+uniform sampler2D NormalTexture;
 uniform vec3 LightPosition_worldspace;
 //uniform vec3 ViewPos;
 uniform float specularFactor;
 uniform float Time;
 
+uniform mat3 MV3x3;
+
 void main()
 {
+
+    vec3 normalTex = texture(NormalTexture, UV).rgb * 2.0 - 1.0;
+
 	vec3 textureColor = texture(TextureSampler0, UV).rgb;
 	vec3 ambient = vec3(0.25, 0.25, 0.5) * inputColor.rgb * (textureColor * 0.5);
 
-    vec3 normal = normalize(Normal);
+    vec3 normal = normalize(normalTex);
+//    vec3 normal = normalize(Normal);
 
-    vec3 lightDir = normalize(LightPosition_worldspace);  
+    vec3 lightDir = normalize(LightDirection_tangentspace);  
+//    vec3 lightDir = normalize(LightPosition_worldspace);  
 
-    vec3 viewDir = normalize(eyeVector);
-//    vec3 reflectDir = -reflect(viewDir, normal);  
-//	float shininess = pow(35.0, specularFactor * 2);
-//    float spec = pow(max(dot(reflectDir, lightDir), 0.0), shininess);
+    vec3 viewDir = normalize(EyeDirection_tangentspace);
+//    vec3 viewDir = normalize(eyeVector);
+    vec3 reflectDir = -reflect(viewDir, normal);  
+	float shininess = pow(2.0, specularFactor * 2);
+    float spec = pow(max(dot(reflectDir, lightDir), 0.0), shininess);
 
+//    vec3 halfNormal = normalize(lightDir + viewDir);
+//    float NdotH = max(0.0, dot(normal, lightDir));
+//    float spec = pow(NdotH, 48.0);
 
-    vec3 halfNormal = normalize(lightDir + viewDir);
-    float NdotH = max(0.0, dot(normal, lightDir));
-    float spec = pow(NdotH, 48.0);
+    float NdotL = max(0.0, dot(normal, lightDir)) + 0.5;
 
-    float NdotL = max(0.0, dot(normal, lightDir));
-
-    float fresnel = pow(1 - max(dot(viewDir, normal), 0), 10.0);
+    float fresnel = pow(1 - max(dot(viewDir, normal), 0), 8.0) * 0.5;
 
     
 //    vec3 result = (NdotL * inputColor.rgb * textureColor) + fresnel + (spec * specularFactor) + ambient;
     
-    vec3 result = (textureColor * NdotL) + spec + ambient + fresnel;
+    vec3 result = (textureColor * NdotL) + spec + ambient;
 
     color = vec4(result, 1.0);
-//    color = vec4(fresnel, fresnel, fresnel, 1.0);
+//    color = vec4(textureColor + spec, 1.0);
+//    color = vec4(spec, spec, spec, 1.0);
 }

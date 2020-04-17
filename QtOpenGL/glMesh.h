@@ -46,7 +46,7 @@ private:
 	GLuint ViewMatrixID;
 	GLuint ModelMatrixID;
 	GLuint ProjectionMatrixID;
-	GLuint ViewRotateID;
+	GLuint ModelView3x3MatrixID;
 	GLuint LightID;
 
 	glm::mat4 Projection;
@@ -62,9 +62,15 @@ private:
 	std::vector<glm::vec3> normals;
 	std::vector<unsigned short> indices;
 
+	std::vector<glm::vec3> tangents;
+	std::vector<glm::vec3> bitangents;
+
 	GLuint vertexbuffer;
 	GLuint uvbuffer;
 	GLuint normalbuffer;
 	GLuint indexbuffer;
 	GLuint vertexArrayObject;
+
+	GLuint tangentBuffer;
+	GLuint bitangentBuffer;
 };
